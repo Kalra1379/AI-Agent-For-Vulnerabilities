@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Site Guardian</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0f1a2b;--navy2:#1b2a44;--teal:#1fb5a3;--amber:#f2a33c;--cream:#f4f1ea;--red:#e5534b;--mut:#9aa7bd}
+*{box-sizing:border-box}body{margin:0;background:var(--navy);color:var(--cream);font:15px/1.5 Inter,system-ui,sans-serif}
+h1,h2,h3{font-family:'Space Grotesk',sans-serif;margin:0}
+header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:20px 32px;border-bottom:1px solid var(--navy2)}
+.brand{font:700 22px 'Space Grotesk';display:flex;gap:10px;align-items:center}.dot{width:12px;height:12px;border-radius:50%;background:var(--teal);box-shadow:0 0 0 4px #1fb5a333}
+.badge{font-size:13px;padding:4px 10px;border-radius:99px;background:var(--navy2);color:var(--mut)}.badge.live{color:var(--teal)}
+main{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:24px;padding:24px 32px;max-width:1500px;margin:auto}
+@media(max-width:1000px){main{grid-template-columns:1fr;padding:16px}}
+.hero{display:flex;gap:28px;align-items:center;flex-wrap:wrap;padding:24px;background:var(--navy2);border-radius:14px;grid-column:1/-1}
+.score{font:700 72px/1 'Space Grotesk'}.score small{font-size:20px;color:var(--mut)}
+.hero p{margin:4px 0 0;color:var(--mut)}.stats{display:flex;gap:28px;margin-left:auto}.stats b{display:block;font:700 28px 'Space Grotesk'}.stats span{color:var(--mut);font-size:13px}
+.bar{display:flex;flex-wrap:wrap;gap:10px;grid-column:1/-1}
+button{font:600 14px Inter;padding:10px 16px;border-radius:8px;border:1px solid var(--navy2);background:var(--navy2);color:var(--cream);cursor:pointer}
+button:hover{border-color:var(--teal)}button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+button.pri{background:var(--teal);color:var(--navy);border-color:var(--teal)}button.warn{background:var(--amber);color:var(--navy);border-color:var(--amber)}button:disabled{opacity:.5;cursor:wait}
+.card{background:var(--navy2);border-radius:14px;padding:18px;margin-bottom:14px;border-left:5px solid var(--teal)}
+.card.medium{border-color:var(--amber)}.card.high{border-color:var(--red)}.card.done{opacity:.6}
+.row{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+.pill{font-size:12px;padding:3px 9px;border-radius:99px;font-weight:600}.low{background:#1fb5a333;color:var(--teal)}.medium{background:#f2a33c33;color:var(--amber)}.high{background:#e5534b33;color:var(--red)}
+.mut{color:var(--mut);font-size:13px}.card p{margin:8px 0}.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+section.panel{background:var(--navy2);border-radius:14px;padding:18px;margin-bottom:16px}section.panel h3{margin-bottom:10px}
+.step{display:flex;gap:10px;padding:6px 0;animation:in .3s}.step i{font-style:normal;width:22px}.step.bad{color:var(--red)}
+@keyframes in{from{opacity:0;transform:translateX(-6px)}}
+.log div{padding:5px 0;border-bottom:1px solid #ffffff10;font-size:13px}.log .ok{color:var(--teal)}.log .warn{color:var(--amber)}
+.mail{background:var(--cream);color:var(--navy);border-radius:8px;padding:12px;font-size:13px;white-space:pre-wrap;margin-top:8px}
+.perf{display:grid;grid-template-columns:90px 1fr;gap:6px 10px;align-items:center;font-size:13px}
+.track{height:10px;background:#0f1a2b;border-radius:6px;overflow:hidden}.track div{height:100%;background:var(--teal);transition:width .8s}.track .was{background:var(--red)}
+.empty{color:var(--mut);padding:18px;text-align:center}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head><body>
+<header><div class="brand"><span class="dot"></span>AI Site Guardian</div>
+<div><span class="badge" id="site">demo-site.local · WordPress 6.4</span> <span class="badge" id="mode">connecting…</span></div></header>
+<main>
+<div class="hero"><div><div class="score" id="score">--<small>/100</small></div><p>Site health</p></div>
+<div><h2 id="headline">Run a scan to see what needs attention</h2><p id="sub">The agent reads your site, rates each issue, and only fixes what your policy allows.</p></div>
+<div class="stats" id="stats"></div></div>
+<div class="bar">
+<button class="pri" id="bScan">Scan site</button><button class="pri" id="bAuto">Fix low-risk issues</button>
+<button class="warn" id="bDisc">Simulate Friday-evening vulnerability</button><button id="bOpt">Speed up site</button><button id="bReset">Reset demo</button></div>
+<div id="findings"></div>
+<aside>
+<section class="panel"><h3>Safe fix pipeline</h3><div id="pipe" class="mut">Fix an issue to watch backup, staging, tests, deploy and verify run.</div></section>
+<section class="panel"><h3>Speed</h3><div class="perf" id="perf"></div></section>
+<section class="panel"><h3>Email to client</h3><div id="mail" class="mut">No emails yet.</div></section>
+<section class="panel"><h3>Activity log</h3><div class="log" id="log"></div></section>
+</aside></main>
+<script src="config.js"></script>
+<script>
+const $=s=>document.querySelector(s),API=window.API_BASE;let ST=null;
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function call(path,method="POST"){const r=await fetch(API+path,{method});if(!r.ok){const e=await r.json().catch(()=>({}));alert(e.detail||"Request failed");throw 0}return r.json()}
+function busy(b){document.querySelectorAll("button").forEach(x=>x.disabled=b)}
+async function act(fn){busy(true);try{await fn()}catch(e){if(e)console.error(e)}busy(false)}
+function render(s){ST=s;
+ const open=s.findings.filter(f=>!["fixed","rolled_back","protected"].includes(f.status));
+ const pen={low:4,medium:12,high:25};const health=s.scanned?Math.max(5,100-open.reduce((a,f)=>a+pen[f.level],0)):null;
+ $("#score").innerHTML=(health??"--")+"<small>/100</small>";
+ $("#mode").textContent=s.ai_mode==="claude"?"Claude live · "+s.model:"Built-in AI fallback";$("#mode").className="badge "+(s.ai_mode==="claude"?"live":"");
+ const wait=open.filter(f=>f.action!=="auto_fix").length;
+ $("#headline").textContent=!s.scanned?"Run a scan to see what needs attention":open.length?`${open.length} issue${open.length>1?"s":""} found, ${wait} need${wait==1?"s":""} your approval`:"Everything is up to date and safe";
+ $("#stats").innerHTML=[["Fixed",s.findings.filter(f=>f.status==="fixed").length],["Waiting for you",wait],["Blocked safely",s.findings.filter(f=>f.status==="rolled_back").length]].map(([k,v])=>`<div><b>${v}</b><span>${k}</span></div>`).join("");
+ $("#findings").innerHTML=s.findings.length?s.findings.map(card).join(""):`<div class="empty">${s.scanned?"No findings. Your site is healthy.":"Nothing scanned yet."}</div>`;
+ const p=s.perf,w=(v,m)=>Math.min(100,v/m*100);
+ $("#perf").innerHTML=`<span>Lighthouse</span><div class="track"><div class="${p.optimized?"":"was"}" style="width:${p.score}%"></div></div>
+ <span>Load time</span><div class="track"><div class="${p.optimized?"":"was"}" style="width:${w(p.load,6)}%"></div></div>
+ <span>Images</span><div class="track"><div class="${p.optimized?"":"was"}" style="width:${w(p.img,6)}%"></div></div>
+ <span class="mut"></span><span class="mut">${p.score}/100 · ${p.load}s · ${p.img}MB · cache ${p.cache?"on":"off"}</span>`;
+ $("#log").innerHTML=s.log.map(l=>`<div class="${l.kind}">${l.t} ${esc(l.msg)}</div>`).join("")||'<div class="mut">Empty</div>';
+ const m=s.emails[0];$("#mail").innerHTML=m?`<div class="mut">To ${esc(m.to)} · ${m.t}</div><div class="mail"><b>${esc(m.subject)}</b>\n\n${esc(m.body)}</div>`:"No emails yet."}
+function card(f){const done=["fixed","rolled_back","protected"].includes(f.status);
+ const label={ready:"Ready to auto-fix",awaiting_approval:"Waiting for your approval",alert_sent:"Urgent alert sent",fixed:"Fixed and verified",rolled_back:"Rolled back, site untouched",protected:"Protected by virtual patch"}[f.status];
+ const ai=f.ai;let btn="";
+ if(f.status==="ready")btn=`<button class="pri" onclick="fix('${f.id}',false)">Fix now</button>`;
+ else if(!done)btn=`<button class="warn" onclick="fix('${f.id}',true)">Approve and fix</button>`+(f.level==="high"&&f.cve?`<button onclick="vp('${f.id}')">Virtual patch now</button>`:"");
+ return `<div class="card ${f.level} ${done?"done":""}"><div class="row"><h3>${esc(f.name)}</h3><span class="pill ${f.level}">${f.level} risk</span></div>
+ <div class="mut">${esc(f.frm)} to ${esc(f.to)} · ${f.update_type} · rule: ${f.rule}${f.cve?` · ${f.cve.id} (CVSS ${f.cve.cvss})`:""}</div>
+ <p>${esc(ai.summary)}</p><div class="mut">AI plan (${ai.source}): ${esc(ai.plan)} Breaking-change risk: ${esc(ai.breaking_risk)}.</div>
+ <div class="acts"><span class="pill ${f.level}">${label}</span>${btn}</div></div>`}
+async function show(steps){const el=$("#pipe");el.innerHTML="";for(const s of steps){el.insertAdjacentHTML("beforeend",`<div class="step ${s.ok?"":"bad"}"><i>${s.ok?"✓":"✕"}</i><div><b>${esc(s.name)}</b><div class="mut">${esc(s.detail)}</div></div></div>`);await sleep(650)}}
+const fix=(id,ok)=>act(async()=>{const r=await call(`/api/findings/${id}/fix?approved=${ok}`);await show(r.steps);render(r.state)});
+const vp=id=>act(async()=>render(await call(`/api/findings/${id}/virtual-patch`)));
+$("#bScan").onclick=()=>act(async()=>render(await call("/api/scan")));
+$("#bAuto").onclick=()=>act(async()=>{const r=await call("/api/autopilot");if(!r.runs.length)alert("Run a scan first, or nothing low-risk is left.");for(const x of r.runs)await show(x.steps);render(r.state)});
+$("#bDisc").onclick=()=>act(async()=>render(await call("/api/disclose")));
+$("#bOpt").onclick=()=>act(async()=>render((await call("/api/optimize")).state));
+$("#bReset").onclick=()=>act(async()=>{$("#pipe").textContent="Fix an issue to watch backup, staging, tests, deploy and verify run.";render(await call("/api/reset"))});
+call("/api/state","GET").then(render).catch(()=>{$("#mode").textContent="Backend offline"});
+</script></body></html>
